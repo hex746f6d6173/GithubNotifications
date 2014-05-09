@@ -44,8 +44,9 @@ var socket = io.connect('http://' + window.location.hostname);
 socket.on('connect', function() {
 
     socket.on("config", function(data) {
+        console.log("config", data);
         $("#github_oauth_link").attr({
-            "href": data.github.oauth_link
+            "href": data.config.github.oauth_link
         });
     });
 

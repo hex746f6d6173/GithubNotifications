@@ -1,4 +1,5 @@
 var express = require('express'),
+    cookie = require('cookie'),
     mongojs = require('mongojs'),
     apns = require("apns"),
     GitHubApi = require("github"),
@@ -23,7 +24,17 @@ var github = new GitHubApi({
 
 io.sockets.on('connection', function(socket) {
 
-    socket.emit("config", config.expose);
+    var cookies = cookie.parse(socket.handshake.headers['cookie']);
+
+    var logged = "loggedOUT";
+
+    if (cookies.github_auth)
+        logged = "loggedIN";
+
+    socket.emit("config", {
+        config: config.expose,
+        logged: logged
+    });
 
     /*
     socket.emit("notification", {
@@ -39,6 +50,8 @@ io.sockets.on('connection', function(socket) {
 app.use(express.static(__dirname + '/public'));
 
 app.get('/github/callback', function(req, res) {
-
-    res.send(req);
+    if (req.body.github_auth) res.cookie('github_auth', 1, {
+        maxAge: 5 * 60 * 1000
+    });
+    res.redirect('/');
 });
