@@ -4,7 +4,8 @@ var express = require('express'),
     GitHubApi = require("github"),
     socket = require('socket.io');
 
-var app = express(),
+var config = require("./config.json"),
+    app = express(),
     server = app.listen(7000),
     io = socket.listen(server),
     options, connection, notification;
@@ -19,7 +20,10 @@ var github = new GitHubApi({
     pathPrefix: "/api/v3", // for some GHEs
     timeout: 5000
 });
+
 io.sockets.on('connection', function(socket) {
+
+    socket.emit("config", config.expose);
 
     /*
     socket.emit("notification", {
@@ -35,5 +39,6 @@ io.sockets.on('connection', function(socket) {
 app.use(express.static(__dirname + '/public'));
 
 app.get('/callback', function(req, res) {
-    res.send('hello world');
+
+    res.send(req);
 });

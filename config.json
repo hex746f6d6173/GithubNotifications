@@ -1,0 +1,7 @@
+{
+    "expose": {
+        "github": {
+            "oauth_link": "https://github.com/login/oauth/authorize?client_id=8f59d9448ad24e3484f3&redirect_uri=http%3A%2F%2Fgitnot.tomasharkema.nl%2Fcallback%2F&scope=repo,user,notifications&state=random"
+        }
+    }
+}
