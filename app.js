@@ -38,7 +38,7 @@ io.sockets.on('connection', function(socket) {
 
 app.use(express.static(__dirname + '/public'));
 
-app.get('/callback', function(req, res) {
+app.get('/github/callback', function(req, res) {
 
     res.send(req);
 });
