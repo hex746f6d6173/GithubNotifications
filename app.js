@@ -29,7 +29,7 @@ io.sockets.on('connection', function(socket) {
     var logged = "loggedOUT";
 
     if (cookies.github_auth)
-        logged = "loggedIN";
+        logged = cookies.github_auth;
 
     socket.emit("config", {
         config: config.expose,
@@ -48,10 +48,7 @@ io.sockets.on('connection', function(socket) {
 });
 
 app.use(express.static(__dirname + '/public'));
-
-app.get('/github/callback', function(req, res) {
-    if (req.body.github_auth) res.cookie('github_auth', 1, {
-        maxAge: 5 * 60 * 1000
-    });
-    res.redirect('/');
+app.get('/github/callback/', function(req, res) {
+    res.cookie('github_auth', req.params.code);
+    res.redirect("/");
 });
