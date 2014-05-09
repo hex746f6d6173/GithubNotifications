@@ -1,0 +1,16 @@
+{
+    "name": "GithubNotifications",
+    "version": "0.0.1",
+    "author": "Tomas Harkema <info@tomasharkema.nl>",
+    "description": "Notifications for GitHub",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/hex746f6d6173/GithubNotifications.git"
+    },
+    "dependencies": {
+        "apns": "0.1.x",
+        "express": "4.1.x",
+        "mongojs": "0.13.x",
+        "github": "0.1.x"
+    }
+}
