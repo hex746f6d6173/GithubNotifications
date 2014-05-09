@@ -2,7 +2,7 @@
     "name": "GithubNotifications",
     "version": "0.0.1",
     "author": "Tomas Harkema <info@tomasharkema.nl>",
-    "description": "Notifications for GitHub",
+    "description": "Notifications for GitHub dev",
     "repository": {
         "type": "git",
         "url": "https://github.com/hex746f6d6173/GithubNotifications.git"
