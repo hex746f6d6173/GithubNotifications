@@ -41,13 +41,17 @@ var notify = function(data) {
 
 var socket = io.connect('http://' + window.location.hostname);
 
-socket.on("config", function(data) {
-    $("#github_oauth_link").attr({
-        "href": data.github.oauth_link
-    });
-});
+socket.on('connect', function() {
 
-socket.on("notification", function(data) {
-    notify(data);
-    console.log(data);
+    socket.on("config", function(data) {
+        $("#github_oauth_link").attr({
+            "href": data.github.oauth_link
+        });
+    });
+
+    socket.on("notification", function(data) {
+        notify(data);
+        console.log(data);
+    });
+
 });
