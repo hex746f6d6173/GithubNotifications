@@ -49,6 +49,6 @@ io.sockets.on('connection', function(socket) {
 
 app.use(express.static(__dirname + '/public'));
 app.get('/github/callback/', function(req, res) {
-    res.cookie('github_auth', req.params.code);
+    res.cookie('github_auth', req.query.code);
     res.redirect("/");
 });
