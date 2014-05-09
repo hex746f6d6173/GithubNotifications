@@ -5,3 +5,7 @@ var express = require('express'),
 
 var app = express(),
     options, connection, notification;
+
+app.use(express.static(__dirname + '/public'));
+
+app.listen(7000);
