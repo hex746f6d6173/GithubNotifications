@@ -39,7 +39,7 @@ var notify = function(data) {
     }
 };
 
-var socket = io.connect('/');
+var socket = io.connect('http://' + window.location.hostname);
 
 socket.on("config", function(data) {
     $("#github_oauth_link").attr({
