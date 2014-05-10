@@ -122,7 +122,7 @@ $(document).ready(function() {
             var title = "",
                 id = data.id,
                 message = "";
-            switch (item.payload.subject.type) {
+            switch (data.payload.subject.type) {
                 case "PullRequest":
                     title = "New Pull Request!";
                     message = "" + item.payload.repository.name + ": " + item.payload.subject.title + "";
