@@ -214,7 +214,7 @@ function scrobNotifications() {
 scrobNotifications();
 setInterval(function() {
     scrobNotifications();
-}, 100000);
+}, 1000 * 60);
 
 app.get('/github/callback/', function(req, res) {
     github.auth.login(req.query.code, function(err, token) {
