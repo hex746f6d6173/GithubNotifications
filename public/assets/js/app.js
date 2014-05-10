@@ -1,4 +1,4 @@
-var notify = function(data) {
+var notify = function(title, body, id) {
     // Check for notification compatibility.
     if (!'Notification' in window) {
         // If the browser version is unsupported, remain silent.
@@ -17,10 +17,10 @@ var notify = function(data) {
     // If the user has granted permission for this domain to send notifications...
     else if (Notification.permission === 'granted') {
         var n = new Notification(
-            data.payload.title, {
-                'body': data.id,
+            title, {
+                'body': body,
                 // ...prevent duplicate notifications
-                'tag': data.payload.id
+                'tag': id
             }
         );
         // Remove the notification from Notification Center when clicked.
@@ -119,7 +119,21 @@ $(document).ready(function() {
         });
 
         socket.on("notification", function(data) {
-            notify(data);
+            var title = "",
+                id = data.id,
+                message = "";
+            switch (item.payload.subject.type) {
+                case "PullRequest":
+                    title = "New Pull Request!";
+                    message = "" + item.payload.repository.name + ": " + item.payload.subject.title + "";
+                    break;
+
+                case "Issue":
+                    title = "New Issue!";
+                    message = "" + item.payload.repository.name + ": " + item.payload.subject.title + "";
+                    break;
+            }
+            notify(title, message, id);
             console.log(data);
         });
 
