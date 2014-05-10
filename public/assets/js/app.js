@@ -99,7 +99,7 @@ $(document).ready(function() {
                             count++;
                         var issueLink = item.payload.subject.url.split('/');
                         var issueID = issueLink[issueLink.length - 1];
-                        url = "https://github.com/" + item.payload.repository.full_name + "/issue/" + issueID;
+                        url = "https://github.com/" + item.payload.repository.full_name + "/issues/" + issueID;
                         string = "New Issue!<br>[" + item.payload.repository.name + "] " + item.payload.subject.title + "";
                         break;
                 }
