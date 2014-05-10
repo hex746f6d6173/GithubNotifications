@@ -18,9 +18,9 @@ var notify = function(data) {
     else if (Notification.permission === 'granted') {
         var n = new Notification(
             data.payload.title, {
-                'body': data.payload.message,
+                'body': data.id,
                 // ...prevent duplicate notifications
-                'tag': data.id
+                'tag': data.payload.id
             }
         );
         // Remove the notification from Notification Center when clicked.
@@ -90,7 +90,7 @@ socket.on('connect', function() {
             }
         });
         $("#notifications").html(html);
-        $("#notifications .well a").click(function() {
+        $("#notifications .well a").unbind('click').click(function() {
             var id = $(this).parent().attr("id");
             socket.emit("seen", {
                 id: id
