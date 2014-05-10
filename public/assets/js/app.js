@@ -38,77 +38,98 @@ var notify = function(data) {
         return;
     }
 };
+$(document).ready(function() {
+    var socket = io.connect('http://' + window.location.hostname);
 
-var socket = io.connect('http://' + window.location.hostname);
+    socket.on('connect', function() {
 
-socket.on('connect', function() {
+        socket.emit("login");
 
-    socket.emit("login");
+        socket.on("config", function(data) {
+            console.log("config", data);
+            switch (data.status.status) {
+                case "loggedOUT":
 
-    socket.on("config", function(data) {
-        console.log("config", data);
-        switch (data.status.status) {
-            case "loggedOUT":
-
-                $("#github_oauth_link").attr({
-                    "href": data.status.authURL
-                });
-                break;
-
-            case "loggedIN":
-
-                $("#github_oauth").hide();
-                $("#github_timeline").show();
-                break;
-
-        }
-    });
-
-    socket.on("user", function(data) {
-        console.log("user", data);
-        $(".user").html("<em>Welcome" + data.user.name + "</em>");
-        socket.emit("getList");
-    });
-
-    socket.on("getListRes", function(data) {
-        console.log("list", data);
-
-        var html = "";
-
-        data.forEach(function(item) {
-            var string = "";
-            var url = "";
-            switch (item.payload.subject.type) {
-                case "PullRequest":
-                    url = "https://github.com/" + item.payload.repository.full_name + "/pulls";
-                    string = "<strong>Pull Request!</strong><br>[" + item.payload.repository.name + "] " + item.payload.subject.title + "";
+                    $("#github_oauth_link").attr({
+                        "href": data.status.authURL
+                    });
                     break;
-            }
 
-            if (string != "") {
-                html = html + '<div class="well" id="' + item.id + '"><a href="' + url + '" target="_blank">' + string + '</a></div>';
+                case "loggedIN":
+
+                    $("#github_oauth").hide();
+                    $("#github_timeline").show();
+                    break;
+
             }
         });
-        $("#notifications").html(html);
-        $("#notifications .well a").unbind('click').click(function() {
-            var id = $(this).parent().attr("id");
-            socket.emit("seen", {
-                id: id
+
+        socket.on("user", function(data) {
+            console.log("user", data);
+            $(".user").html("<em>Welcome " + data.user.name + "</em>");
+            socket.emit("getList");
+        });
+
+        socket.on("getListRes", function(data) {
+            console.log("list", data);
+
+            var html = "",
+                count = 0;
+
+            data.forEach(function(item) {
+                var string = "",
+                    url = "",
+                    classString = "well";
+                switch (item.payload.subject.type) {
+                    case "PullRequest":
+                        classString += item.seen ? " seen well-sm" : " unseen";
+
+                        if (!item.seen)
+                            count++;
+                        var pullLink = item.payload.subject.url.split('/');
+                        var pullID = pullLink[pullLink.length - 1];
+                        url = "https://github.com/" + item.payload.repository.full_name + "/pull/" + pullID;
+                        string = "New Pull Request!<br>[" + item.payload.repository.name + "] " + item.payload.subject.title + "";
+                        break;
+
+                    case "Issue":
+                        classString += item.seen ? " seen well-sm" : " unseen";
+
+                        if (!item.seen)
+                            count++;
+                        var issueLink = item.payload.subject.url.split('/');
+                        var issueID = issueLink[issueLink.length - 1];
+                        url = "https://github.com/" + item.payload.repository.full_name + "/issue/" + issueID;
+                        string = "New Issue!<br>[" + item.payload.repository.name + "] " + item.payload.subject.title + "";
+                        break;
+                }
+
+                if (string != "") {
+                    html = html + '<div class="' + classString + '" id="' + item.id + '"><a href="' + url + '" target="_blank">' + string + '</a></div>';
+                }
+            });
+            $("#notifications").html(html);
+            $("#counter").html((count == 0) ? "" : count);
+            $("#notifications .well a").unbind('click').click(function() {
+                var id = $(this).parent().attr("id");
+                socket.emit("seen", {
+                    id: id
+                });
             });
         });
-    });
 
-    socket.on("notification", function(data) {
-        notify(data);
-        console.log(data);
-    });
+        socket.on("notification", function(data) {
+            notify(data);
+            console.log(data);
+        });
 
-    socket.on("updateNotification", function(data) {
-        console.log("updateNotification", data);
-    });
+        socket.on("updateNotification", function(data) {
+            console.log("updateNotification", data);
+        });
 
-    socket.on("logout", function() {
-        location.href = "/logout";
-    });
+        socket.on("logout", function() {
+            location.href = "/logout";
+        });
 
+    });
 });

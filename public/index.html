@@ -15,10 +15,21 @@
       <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
       <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
     <![endif]-->
+    <style>
+    #notifications{
+      margin-top: 20px;
+    }
+    .unseen{
+      font-weight: bold;
+    }
+    .well a{
+      color:black;
+    }
+    </style>
   </head>
   <body>
     <div class="container">
-      <h1>GithubNotifications</h1>
+      <h1>GithubNotifications <span class="label label-default" id="counter"></span></h1>
       <div class="user"></div>
       <div id="github_oauth"><a href="#" id="github_oauth_link">oAuth met Github</a></div>
       <div id="notifications"></div>
