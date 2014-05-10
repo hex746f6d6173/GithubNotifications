@@ -127,29 +127,33 @@ io.sockets.on('connection', function(socket) {
             authURL: auth_url
         };
 
-        user.cookies = cookie.parse(socket.handshake.headers['cookie']);
-
-        if (user.cookies.gitnot_loggedin) {
-            if (parseInt(user.cookies.gitnot_loggedin) > 5) {
-                user.status = {
-                    status: "loggedIN",
-                    code: user.cookies.gitnot_loggedin
-                };
-
-                GitNot.user.findByUID(parseInt(user.cookies.gitnot_loggedin), function(err, doc) {
-                    if (doc) {
-                        user.uid = doc.uid;
-                        socket.emit("user", {
-                            user: doc.user,
-                            uid: doc.uid
-                        });
-                        GitNot.notify.setSocketHook(doc.uid, socket);
-                    } else {
-                        socket.emit("logout");
-                    }
-                });
-            }
+        var c = socket.handshake.headers['cookie'];
+        if (c !== undefined) {
+            user.cookies = cookie.parse(c);
         }
+
+        if (user.cookies)
+            if (user.cookies.gitnot_loggedin)
+                if (parseInt(user.cookies.gitnot_loggedin) > 5) {
+                    user.status = {
+                        status: "loggedIN",
+                        code: user.cookies.gitnot_loggedin
+                    };
+
+                    GitNot.user.findByUID(parseInt(user.cookies.gitnot_loggedin), function(err, doc) {
+                        if (doc) {
+                            user.uid = doc.uid;
+                            socket.emit("user", {
+                                user: doc.user,
+                                uid: doc.uid
+                            });
+                            GitNot.notify.setSocketHook(doc.uid, socket);
+                        } else {
+                            socket.emit("logout");
+                        }
+                    });
+                }
+
 
         GitNot.user.EmitConfig(user.status, config, socket);
     });
