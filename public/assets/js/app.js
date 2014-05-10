@@ -45,9 +45,26 @@ socket.on('connect', function() {
 
     socket.on("config", function(data) {
         console.log("config", data);
-        $("#github_oauth_link").attr({
-            "href": data.config.github.oauth_link
-        });
+        switch (data.status.status) {
+            case "loggedOUT":
+
+                $("#github_oauth_link").attr({
+                    "href": data.status.authURL
+                });
+                break;
+
+            case "loggedIN":
+
+                $("#github_oauth").hide();
+                $("#github_timeline").show();
+                break;
+
+        }
+    });
+
+    socket.on("user", function(data) {
+        console.log("user", data);
+        $(".user").html("<em>Welcome, " + data.name + "</em>");
     });
 
     socket.on("notification", function(data) {
