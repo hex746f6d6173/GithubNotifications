@@ -108,6 +108,9 @@ $(document).ready(function() {
                     html = html + '<div class="' + classString + '" id="' + item.id + '"><a href="' + url + '" target="_blank">' + string + '</a></div>';
                 }
             });
+            if (data.length === 0) {
+                html = "<h2>Hmm, you don't have notifications (jet)!</h2>";
+            }
             $("#notifications").html(html);
             $("#counter").html((count == 0) ? "" : count);
             $("#notifications .well a").unbind('click').click(function() {
