@@ -83,11 +83,16 @@ socket.on('connect', function() {
                     break;
             }
 
-            html = html + '<div class="well">' + string + '</div>';
+            html = html + '<div class="well" id="' + item.id + '"><a href="' + item.payload.subject.url + '" target="_blank">' + string + '</a></div>';
 
         });
-
         $("#notifications").html(html);
+        $("#notifications .well a").click(function() {
+            var id = $(this).parent().attr("id");
+            socket.emit("seen", {
+                id: id
+            });
+        });
     });
 
     socket.on("notification", function(data) {

@@ -89,6 +89,20 @@ var GitNot = {
             } else {
                 // delayed push
             }
+        },
+        seen: function(a) {
+            GitNot.notifications.update({
+                id: a.id
+            }, {
+                $set: {
+                    seen: true
+                }
+            }, {}, function() {
+
+            });
+        },
+        update: function(id, uid, payload) {
+
         }
     }
 };
@@ -136,6 +150,10 @@ io.sockets.on('connection', function(socket) {
             GitNot.user.getNotifications(user.uid, function(err, docs) {
                 socket.emit("getListRes", docs);
             });
+    });
+
+    socket.on("seen", function(data) {
+        GitNot.notify.seen(data);
     });
 
     socket.on('disconnect', function() {
