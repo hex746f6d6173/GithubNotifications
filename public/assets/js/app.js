@@ -125,16 +125,15 @@ $(document).ready(function() {
             switch (data.payload.subject.type) {
                 case "PullRequest":
                     title = "New Pull Request!";
-                    message = "" + item.payload.repository.name + ": " + item.payload.subject.title + "";
+                    message = "" + data.payload.repository.name + ": " + data.payload.subject.title + "";
                     break;
 
                 case "Issue":
                     title = "New Issue!";
-                    message = "" + item.payload.repository.name + ": " + item.payload.subject.title + "";
+                    message = "" + data.payload.repository.name + ": " + data.payload.subject.title + "";
                     break;
             }
             notify(title, message, id);
-            console.log(data);
         });
 
         socket.on("updateNotification", function(data) {
