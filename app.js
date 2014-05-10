@@ -12,14 +12,8 @@ var config = require("./config.json"),
     options, connection, notification;
 
 var github = new GitHubApi({
-    // required
-    version: "3.0.0",
-    // optional
-    debug: true,
-    protocol: "https",
-    host: "gitnot.tomasharkema.nl",
-    pathPrefix: "/api/v3", // for some GHEs
-    timeout: 5000
+    version: "3.0.0"
+
 });
 
 io.sockets.on('connection', function(socket) {
@@ -50,5 +44,9 @@ io.sockets.on('connection', function(socket) {
 app.use(express.static(__dirname + '/public'));
 app.get('/github/callback/', function(req, res) {
     res.cookie('github_auth', req.query.code);
+    github.authenticate({
+        type: "oauth",
+        token: req.query.code
+    });
     res.redirect("/");
 });
