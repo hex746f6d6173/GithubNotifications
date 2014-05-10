@@ -43,6 +43,8 @@ var socket = io.connect('http://' + window.location.hostname);
 
 socket.on('connect', function() {
 
+    socket.emit("login");
+
     socket.on("config", function(data) {
         console.log("config", data);
         switch (data.status.status) {
@@ -64,12 +66,37 @@ socket.on('connect', function() {
 
     socket.on("user", function(data) {
         console.log("user", data);
-        $(".user").html("<em>Welcome, " + data.name + "</em>");
+        $(".user").html("<em>Welcome" + data.user.name + "</em>");
+        socket.emit("getList");
+    });
+
+    socket.on("getListRes", function(data) {
+        console.log("list", data);
+
+        var html = "";
+
+        data.forEach(function(item) {
+            var string = "";
+            switch (item.payload.subject.type) {
+                case "PullRequest":
+                    string = "<strong>Pull Request!</strong><br>[" + item.payload.repository.name + "] " + item.payload.subject.title + "";
+                    break;
+            }
+
+            html = html + '<div class="well">' + string + '</div>';
+
+        });
+
+        $("#notifications").html(html);
     });
 
     socket.on("notification", function(data) {
         notify(data);
         console.log(data);
+    });
+
+    socket.on("logout", function() {
+        location.href = "/logout";
     });
 
 });

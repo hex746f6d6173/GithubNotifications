@@ -10,7 +10,9 @@ var http = require('http'),
 var config = require("./config.json"),
     app = express(),
     server = app.listen(7000),
-    io = socket.listen(server),
+    io = socket.listen(server, {
+        log: false
+    }),
     options, connection, notification;
 
 var auth_url = github.auth.config({
@@ -20,38 +22,125 @@ var auth_url = github.auth.config({
 
 var db = mongojs('gitnot', ['users']);
 
-var users = db.collection('users');
+var GitNot = {
+    users: db.collection('users'),
+    notifications: db.collection('notifications'),
+    user: {
+        EmitConfig: function(status, config, socket) {
+            socket.emit("config", {
+                config: config.expose,
+                status: status
+            });
+        },
+        findByUID: function(uid, fn) {
+            GitNot.users.findOne({
+                uid: uid
+            }, fn);
+        },
+        find: function(a, fn) {
+            GitNot.users.findOne(a, fn);
+        },
+        getNotifications: function(uid, fn) {
+            GitNot.notifications.find({
+                uid: uid
+            }).sort({
+                time: -1
+            }, fn);
+        },
+        findAll: function(fn) {
+            GitNot.users.find(fn);
+        }
+    }
+};
 
 io.sockets.on('connection', function(socket) {
 
-    var cookies = cookie.parse(socket.handshake.headers['cookie']);
+    var user = {};
 
-    var status = {
-        status: "loggedOUT",
-        authURL: auth_url
-    };
+    socket.on("login", function() {
 
-    if (cookies.gitnot_loggedin) {
-        status = {
-            status: "loggedIN",
-            code: cookies.gitnot_loggedin
+        user.status = {
+            status: "loggedOUT",
+            authURL: auth_url
         };
-        users.findOne({
-            time: parseInt(cookies.gitnot_loggedin)
-        }, function(err, doc) {
-            console.log(err, doc);
-            if (doc)
-                socket.emit("user", doc.user);
-        });
-    }
-    socket.emit("config", {
-        config: config.expose,
-        status: status
+
+        user.cookies = cookie.parse(socket.handshake.headers['cookie']);
+
+        if (user.cookies.gitnot_loggedin) {
+            if (user.cookies.gitnot_loggedin > 5) {
+                user.status = {
+                    status: "loggedIN",
+                    code: user.cookies.gitnot_loggedin
+                };
+
+                GitNot.user.findByUID(parseInt(user.cookies.gitnot_loggedin), function(err, doc) {
+                    if (doc) {
+                        user.uid = doc.uid;
+                        socket.emit("user", {
+                            user: doc.user,
+                            uid: doc.uid
+                        });
+                    } else {
+                        socket.emit("logout");
+                    }
+                });
+            }
+        }
+
+        GitNot.user.EmitConfig(user.status, config, socket);
+    });
+
+    socket.on("getList", function() {
+        if (user.uid)
+            GitNot.user.getNotifications(user.uid, function(err, docs) {
+                socket.emit("getListRes", docs);
+            });
     });
 
 });
 
 app.use(express.static(__dirname + '/public'));
+
+app.get('/logout', function(req, res) {
+    res.cookie("gitnot_loggedin", 0);
+    res.redirect("/");
+});
+
+function scrobNotifications() {
+    console.log("Get Notifications");
+    GitNot.user.findAll(function(err, userDocs) {
+        userDocs.forEach(function(userDoc) {
+
+            var client = github.client(userDoc.token);
+
+            var notifications = client.get("/notifications", {}, function(err, status, body, headers) {
+                body.forEach(function(item) {
+
+                    var time = new Date(item.updated_at).getTime();
+
+                    GitNot.notifications.findOne({
+                        id: item.id
+                    }, function(err, doc) {
+                        if (!doc) {
+                            GitNot.notifications.save({
+                                uid: userDoc.uid,
+                                id: item.id,
+                                time: time,
+                                payload: item
+                            });
+                        }
+                    });
+                });
+            });
+        });
+    });
+}
+scrobNotifications();
+setInterval(function() {
+
+    scrobNotifications();
+
+}, 100000);
 
 app.get('/github/callback/', function(req, res) {
     github.auth.login(req.query.code, function(err, token) {
@@ -59,14 +148,24 @@ app.get('/github/callback/', function(req, res) {
         var ghme = client.me();
         ghme.info(function(err, data, headers) {
             var time = new Date().getTime();
-            users.save({
-                id: data.id,
-                user: data,
-                token: token,
-                time: time
-            }, function() {
-                res.cookie("gitnot_loggedin", time);
-                res.redirect("/");
+            GitNot.user.find({
+                id: data.id
+            }, function(err, doc) {
+                if (doc) {
+                    res.cookie("gitnot_loggedin", doc.uid);
+                    res.redirect("/");
+                } else {
+                    GitNot.users.save({
+                        id: data.id,
+                        user: data,
+                        token: token,
+                        code: req.query.code,
+                        uid: time
+                    }, function() {
+                        res.cookie("gitnot_loggedin", time);
+                        res.redirect("/");
+                    });
+                }
             });
         });
     });
