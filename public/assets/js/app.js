@@ -68,6 +68,7 @@ $(document).ready(function() {
             console.log("user", data);
             $(".user").html("<em>Welcome " + data.user.login + "</em>");
             socket.emit("getList");
+            notify("Hallo!", "Hallo!", "welcomePush");
         });
 
         socket.on("getListRes", function(data) {
