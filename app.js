@@ -130,7 +130,7 @@ io.sockets.on('connection', function(socket) {
         user.cookies = cookie.parse(socket.handshake.headers['cookie']);
 
         if (user.cookies.gitnot_loggedin) {
-            if (user.cookies.gitnot_loggedin > 5) {
+            if (parseInt(user.cookies.gitnot_loggedin) > 5) {
                 user.status = {
                     status: "loggedIN",
                     code: user.cookies.gitnot_loggedin
@@ -174,7 +174,7 @@ io.sockets.on('connection', function(socket) {
 app.use(express.static(__dirname + '/public'));
 
 app.get('/logout', function(req, res) {
-    res.cookie("gitnot_loggedin", 0);
+    res.cookie("gitnot_loggedin", "0");
     res.redirect("/");
 });
 
