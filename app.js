@@ -1,8 +1,10 @@
-var express = require('express'),
+var http = require('http'),
+    request = require('request'),
+    express = require('express'),
     cookie = require('cookie'),
     mongojs = require('mongojs'),
     apns = require("apns"),
-    GitHubApi = require("github"),
+    github = require("octonode"),
     socket = require('socket.io');
 
 var config = require("./config.json"),
@@ -11,42 +13,61 @@ var config = require("./config.json"),
     io = socket.listen(server),
     options, connection, notification;
 
-var github = new GitHubApi({
-    version: "3.0.0"
+var auth_url = github.auth.config({
+    id: '8f59d9448ad24e3484f3',
+    secret: 'fe3cef4f26369033280c37de853e8b6815ec589a'
+}).login(['user', 'repo', 'gist', 'notifications']);
 
-});
+var db = mongojs('gitnot', ['users']);
+
+var users = db.collection('users');
 
 io.sockets.on('connection', function(socket) {
 
     var cookies = cookie.parse(socket.handshake.headers['cookie']);
 
-    var logged = "loggedOUT";
+    var status = {
+        status: "loggedOUT",
+        authURL: auth_url
+    };
 
-    if (cookies.github_auth)
-        logged = cookies.github_auth;
-
+    if (cookies.gitnot_loggedin) {
+        status = {
+            status: "loggedIN",
+            code: cookies.gitnot_loggedin
+        };
+        users.findOne({
+            time: parseInt(cookies.gitnot_loggedin)
+        }, function(err, doc) {
+            console.log(err, doc);
+            if (doc)
+                socket.emit("user", doc.user);
+        });
+    }
     socket.emit("config", {
         config: config.expose,
-        logged: logged
+        status: status
     });
 
-    /*
-    socket.emit("notification", {
-        id: "asdfasdfasdfasf",
-        payload: {
-            title: "GithubNotifications",
-            message: "GithubNotifications"
-        }
-    });
-	*/
 });
 
 app.use(express.static(__dirname + '/public'));
+
 app.get('/github/callback/', function(req, res) {
-    res.cookie('github_auth', req.query.code);
-    github.authenticate({
-        type: "oauth",
-        token: req.query.code
+    github.auth.login(req.query.code, function(err, token) {
+        var client = github.client(token);
+        var ghme = client.me();
+        ghme.info(function(err, data, headers) {
+            var time = new Date().getTime();
+            users.save({
+                id: data.id,
+                user: data,
+                token: token,
+                time: time
+            }, function() {
+                res.cookie("gitnot_loggedin", time);
+                res.redirect("/");
+            });
+        });
     });
-    res.redirect("/");
 });

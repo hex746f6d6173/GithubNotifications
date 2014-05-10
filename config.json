@@ -3,5 +3,10 @@
         "github": {
             "oauth_link": "https://github.com/login/oauth/authorize?client_id=8f59d9448ad24e3484f3&redirect_uri=http%3A%2F%2Fgitnot.tomasharkema.nl%2Fgithub%2Fcallback%2F&scope=repo,user,notifications&state=random"
         }
+    },
+    "github": {
+        "client_id": "8f59d9448ad24e3484f3",
+        "client_secret": "fe3cef4f26369033280c37de853e8b6815ec589a",
+        "redirect_uri": "http%3A%2F%2Fgitnot.tomasharkema.nl%2Fgithub%2Fcallback%2F"
     }
 }
