@@ -113,6 +113,7 @@ $(document).ready(function() {
             }
             $("#notifications").html(html);
             $("#counter").html((count == 0) ? "" : count);
+            document.title = (count == 0) ? "" : " (" + count + ")";
             $("#notifications .well a").unbind('click').click(function() {
                 var id = $(this).parent().attr("id");
                 socket.emit("seen", {
