@@ -77,7 +77,9 @@ var GitNot = {
         removeHook: function(a, fn) {
             GitNot.hooks.remove(a);
         },
-        sendNotification: function(uid, payload) {
+        sendNotification: function(uid, id, payload) {
+            payload.seen = false;
+            payload.sent = false;
             GitNot.notifications.save(payload);
             var socketHook = GitNot.notify.getSocketHook(uid);
             console.log("NOTIFY", socketHook);
@@ -165,7 +167,7 @@ function scrobNotifications() {
                         id: item.id
                     }, function(err, doc) {
                         if (!doc) {
-                            GitNot.notify.sendNotification(userDoc.uid, {
+                            GitNot.notify.sendNotification(userDoc.uid, item.id, {
                                 uid: userDoc.uid,
                                 id: item.id,
                                 time: time,
@@ -180,9 +182,7 @@ function scrobNotifications() {
 }
 scrobNotifications();
 setInterval(function() {
-
     scrobNotifications();
-
 }, 100000);
 
 app.get('/github/callback/', function(req, res) {
@@ -203,7 +203,7 @@ app.get('/github/callback/', function(req, res) {
                         user: data,
                         token: token,
                         code: req.query.code,
-                        uid: time
+                        uid: time,
                     }, function() {
                         res.cookie("gitnot_loggedin", time);
                         res.redirect("/");
