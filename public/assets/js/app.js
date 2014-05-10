@@ -66,7 +66,7 @@ $(document).ready(function() {
 
         socket.on("user", function(data) {
             console.log("user", data);
-            $(".user").html("<em>Welcome " + data.user.name + "</em>");
+            $(".user").html("<em>Welcome " + data.user.login + "</em>");
             socket.emit("getList");
         });
 
