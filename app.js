@@ -74,7 +74,7 @@ var GitNot = {
                     GitNot.hooks.save(a);
             });
         },
-        removeHook: function(a, fn) {
+        removeHook: function(a) {
             GitNot.hooks.remove(a);
         },
         sendNotification: function(uid, id, payload) {
