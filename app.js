@@ -20,11 +20,12 @@ var auth_url = github.auth.config({
     secret: 'fe3cef4f26369033280c37de853e8b6815ec589a'
 }).login(['user', 'repo', 'gist', 'notifications']);
 
-var db = mongojs('gitnot', ['users']);
+var db = mongojs('gitnot', ['users', 'notifications', 'hooks']);
 
 var GitNot = {
     users: db.collection('users'),
     notifications: db.collection('notifications'),
+    hooks: db.collection('hooks'),
     user: {
         EmitConfig: function(status, config, socket) {
             socket.emit("config", {
@@ -49,6 +50,43 @@ var GitNot = {
         },
         findAll: function(fn) {
             GitNot.users.find(fn);
+        }
+    },
+    notify: {
+        socketHooks: {},
+        getSocketHook: function(uid) {
+            return GitNot.notify.socketHooks[uid];
+        },
+        setSocketHook: function(uid, socket) {
+            GitNot.notify.socketHooks[uid] = socket;
+        },
+        removeSocketHook: function(uid) {
+            GitNot.notify.socketHooks[uid] = null;
+        },
+        getHooks: function(uid, fn) {
+            GitNot.hooks.find({
+                uid: uid
+            }, fn);
+        },
+        addHook: function(a, fn) {
+            GitNot.hooks.findOne(a, function(err, doc) {
+                if (!doc)
+                    GitNot.hooks.save(a);
+            });
+        },
+        removeHook: function(a, fn) {
+            GitNot.hooks.remove(a);
+        },
+        sendNotification: function(uid, payload) {
+            GitNot.notifications.save(payload);
+            var socketHook = GitNot.notify.getSocketHook(uid);
+            console.log("NOTIFY", socketHook);
+            if (socketHook) {
+                // inmidiate push
+                socketHook.emit("notification", payload);
+            } else {
+                // delayed push
+            }
         }
     }
 };
@@ -80,6 +118,7 @@ io.sockets.on('connection', function(socket) {
                             user: doc.user,
                             uid: doc.uid
                         });
+                        GitNot.notify.setSocketHook(doc.uid, socket);
                     } else {
                         socket.emit("logout");
                     }
@@ -95,6 +134,10 @@ io.sockets.on('connection', function(socket) {
             GitNot.user.getNotifications(user.uid, function(err, docs) {
                 socket.emit("getListRes", docs);
             });
+    });
+
+    socket.on('disconnect', function() {
+        GitNot.notify.removeSocketHook(doc.uid);
     });
 
 });
@@ -122,7 +165,7 @@ function scrobNotifications() {
                         id: item.id
                     }, function(err, doc) {
                         if (!doc) {
-                            GitNot.notifications.save({
+                            GitNot.notify.sendNotification(userDoc.uid, {
                                 uid: userDoc.uid,
                                 id: item.id,
                                 time: time,
