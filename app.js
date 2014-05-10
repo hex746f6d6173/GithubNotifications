@@ -108,9 +108,7 @@ var GitNot = {
                 if (doc) {
                     var socketHook = GitNot.notify.getSocketHook(uid);
                     if (socketHook) {
-                        socketHook.emit("updateNotification", {
-                            doc
-                        });
+                        socketHook.emit("updateNotification", doc);
                     }
                 }
             });
