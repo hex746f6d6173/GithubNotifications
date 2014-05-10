@@ -77,14 +77,17 @@ socket.on('connect', function() {
 
         data.forEach(function(item) {
             var string = "";
+            var url = "";
             switch (item.payload.subject.type) {
                 case "PullRequest":
+                    url = "https://github.com/" + item.payload.repository.full_name + "/pulls";
                     string = "<strong>Pull Request!</strong><br>[" + item.payload.repository.name + "] " + item.payload.subject.title + "";
                     break;
             }
 
-            html = html + '<div class="well" id="' + item.id + '"><a href="' + item.payload.subject.url + '" target="_blank">' + string + '</a></div>';
-
+            if (string != "") {
+                html = html + '<div class="well" id="' + item.id + '"><a href="' + url + '" target="_blank">' + string + '</a></div>';
+            }
         });
         $("#notifications").html(html);
         $("#notifications .well a").click(function() {
@@ -98,6 +101,10 @@ socket.on('connect', function() {
     socket.on("notification", function(data) {
         notify(data);
         console.log(data);
+    });
+
+    socket.on("updateNotification", function(data) {
+        console.log("updateNotification", data);
     });
 
     socket.on("logout", function() {

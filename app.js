@@ -98,11 +98,22 @@ var GitNot = {
                     seen: true
                 }
             }, {}, function() {
-
+                GitNot.notify.update(a.id);
             });
         },
-        update: function(id, uid, payload) {
-
+        update: function(id) {
+            GitNot.notifications.findOne({
+                id: id
+            }, function(err, doc) {
+                if (doc) {
+                    var socketHook = GitNot.notify.getSocketHook(uid);
+                    if (socketHook) {
+                        socketHook.emit("updateNotification", {
+                            doc
+                        });
+                    }
+                }
+            });
         }
     }
 };
