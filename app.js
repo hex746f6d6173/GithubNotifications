@@ -92,14 +92,17 @@ var GitNot = {
         },
         seen: function(uid, a) {
             console.log("seen", uid, a.id, a);
-            GitNot.notifications.update({
-                id: a.id
-            }, {
-                $set: {
-                    seen: true
-                }
-            }, {}, function() {
-                console.log("> update", uid, a.id, a);
+            GitNot.notifications.findAndModify({
+                query: {
+                    id: a.id
+                },
+                update: {
+                    $set: {
+                        seen: true
+                    }
+                },
+                new: true
+            }, function(err, doc, lastErrorObject) {
                 GitNot.notify.update(uid, a.id);
             });
         },
