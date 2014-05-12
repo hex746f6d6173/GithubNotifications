@@ -18,7 +18,7 @@ var config = require("./config.json"),
 var auth_url = github.auth.config({
     id: '8f59d9448ad24e3484f3',
     secret: 'fe3cef4f26369033280c37de853e8b6815ec589a'
-}).login(['user', 'repo', 'gist', 'notifications']);
+}).login(['user', 'notifications']);
 
 var db = mongojs('gitnot', ['users', 'notifications', 'hooks']);
 
