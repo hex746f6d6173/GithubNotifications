@@ -90,7 +90,7 @@ var GitNot = {
                 // delayed push
             }
         },
-        seen: function(a) {
+        seen: function(uid, a) {
             GitNot.notifications.update({
                 id: a.id
             }, {
@@ -98,10 +98,10 @@ var GitNot = {
                     seen: true
                 }
             }, {}, function() {
-                GitNot.notify.update(a.id);
+                GitNot.notify.update(uid, a.id);
             });
         },
-        update: function(id) {
+        update: function(uid, id) {
             GitNot.notifications.findOne({
                 id: id
             }, function(err, doc) {
@@ -166,7 +166,7 @@ io.sockets.on('connection', function(socket) {
     });
 
     socket.on("seen", function(data) {
-        GitNot.notify.seen(data);
+        GitNot.notify.seen(user.uid, data);
     });
 
     socket.on('disconnect', function() {
