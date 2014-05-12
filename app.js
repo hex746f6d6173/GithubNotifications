@@ -91,6 +91,7 @@ var GitNot = {
             }
         },
         seen: function(uid, a) {
+            console.log("seen", uid, a.id, a);
             GitNot.notifications.update({
                 id: a.id
             }, {
@@ -98,14 +99,17 @@ var GitNot = {
                     seen: true
                 }
             }, {}, function() {
+                console.log("> update", uid, a.id, a);
                 GitNot.notify.update(uid, a.id);
             });
         },
         update: function(uid, id) {
+            console.log("update", uid, id);
             GitNot.notifications.findOne({
                 id: id
             }, function(err, doc) {
                 if (doc) {
+                    console.log("updateNotification", uid, id);
                     var socketHook = GitNot.notify.getSocketHook(uid);
                     if (socketHook) {
                         socketHook.emit("updateNotification", doc);
