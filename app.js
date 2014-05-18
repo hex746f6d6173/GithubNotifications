@@ -9,7 +9,7 @@ var http = require('http'),
 
 var config = require("./config.json"),
     app = express(),
-    server = app.listen(7000),
+    server = app.listen((!process.env.NODE_ENV || process.env.NODE_ENV == "production") ? 7000 : 7777),
     io = socket.listen(server, {
         log: false
     }),
@@ -251,3 +251,6 @@ app.get('/github/callback/', function(req, res) {
         });
     });
 });
+
+if (process.env.NODE_ENV == "testing")
+    process.exit();
